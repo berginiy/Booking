@@ -1,0 +1,60 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: conference-booking
+  datasource:
+    url: jdbc:h2:file:./data/booking;AUTO_SERVER=TRUE
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  jackson:
+    time-zone: Europe/Moscow
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:2525}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_AUTH:false}
+          starttls:
+            enable: ${MAIL_STARTTLS:false}
+          connectiontimeout: 5000
+          timeout: 10000
+          writetimeout: 10000
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+app:
+  floors: 5
+  work-day-start: "08:00"
+  work-day-end: "20:00"
+  corporate-email-domain: ${CORPORATE_EMAIL_DOMAIN:}
+  seed-demo-data: true
+  cors-origin: http://localhost:5173
+  admin:
+    username: ${ADMIN_USERNAME:admin}
+    password: ${ADMIN_PASSWORD:admin123}
+  graph:
+    enabled: ${GRAPH_ENABLED:false}
+    base-url: ${GRAPH_BASE_URL:http://localhost:9000/v1.0}
+    authority: ${GRAPH_AUTHORITY:http://localhost:9000}
+    tenant-id: ${GRAPH_TENANT_ID:test-tenant}
+    client-id: ${GRAPH_CLIENT_ID:test-client}
+    client-secret: ${GRAPH_CLIENT_SECRET:test-secret}
+    scope: https://graph.microsoft.com/.default
+    page-size: 100
+  mail:
+    enabled: ${MAIL_ENABLED:false}
+    from: ${MAIL_FROM:booking@company.test}
+    from-name: ${MAIL_FROM_NAME:Бронирование залов}
+    site-url: ${SITE_URL:http://localhost:5173}
+  jwt:
+    secret: ${JWT_SECRET:change-this-secret-change-this-secret-1234567890}
+    expiration-minutes: 480

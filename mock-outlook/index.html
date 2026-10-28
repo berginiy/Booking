@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тестовый Outlook</title>
+<style>
+  :root { --ink: #0f172a; --muted: #64748b; --line: #e2e8f0; --brand: #3b5bdb; --danger: #c92a3a; --ok: #12805c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: #f3f5f9; }
+  header { background: #0b1220; color: #fff; padding: 16px 24px; }
+  header h1 { margin: 0; font-size: 18px; }
+  header p { margin: 2px 0 0; color: #93a1bd; font-size: 13px; }
+  main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 60px; display: grid; gap: 16px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+  h2 { margin: 0 0 12px; font-size: 16px; }
+  dl { display: grid; grid-template-columns: 160px 1fr; gap: 6px 12px; margin: 0; }
+  dt { color: var(--muted); }
+  dd { margin: 0; font-family: ui-monospace, Consolas, monospace; font-size: 13px; word-break: break-all; }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  button { font: inherit; font-weight: 600; padding: 8px 14px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; }
+  button:hover { background: #f1f5f9; }
+  button.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+  button.danger { color: var(--danger); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px; font-size: 12px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); }
+  td { padding: 8px; border-bottom: 1px solid var(--line); }
+  td.act { text-align: right; white-space: nowrap; }
+  .off { opacity: .5; }
+  .tag { padding: 2px 8px; border-radius: 99px; font-size: 12px; font-weight: 600; background: #e3f6ee; color: var(--ok); }
+  .tag.off { background: #fdeceb; color: var(--danger); opacity: 1; }
+  .msg { font-size: 14px; }
+  .scroll { max-height: 420px; overflow: auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Тестовый Outlook</h1>
+  <p>Эмулятор Microsoft Graph: каталог пользователей и календари</p>
+</header>
+<main>
+  <section class="card">
+    <h2>Параметры подключения для application.yml</h2>
+    <dl id="cfg"></dl>
+  </section>
+
+  <section class="card">
+    <h2>Загрузка сотрудников из CSV</h2>
+    <p class="msg">Формат: ФИО; email; телефон (необязательно: отдел; должность). Кодировка UTF-8 или windows-1251.</p>
+    <div class="row">
+      <input type="file" id="file" accept=".csv,.txt">
+      <label><input type="checkbox" id="replace"> заменить весь список</label>
+      <button class="primary" id="upload">Загрузить</button>
+      <button class="danger" id="reset">Очистить всё</button>
+    </div>
+    <p class="msg" id="result"></p>
+  </section>
+
+  <section class="card">
+    <h2>Пользователи (<span id="count">0</span>)</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>ФИО</th><th>Email</th><th>Телефон</th><th>Статус</th><th></th></tr></thead>
+        <tbody id="users"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>События календаря (<span id="evcount">0</span>)</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Тема</th><th>Организатор</th><th>Начало</th><th>Окончание</th><th>Место</th></tr></thead>
+        <tbody id="events"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  async function load() {
+    const s = await (await fetch('/mock/state')).json();
+    const c = s.config;
+    $('cfg').innerHTML = [
+      ['enabled', 'true'], ['base-url', c.baseUrl], ['authority', c.authority],
+      ['tenant-id', c.tenantId], ['client-id', c.clientId], ['client-secret', c.clientSecret],
+    ].map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('');
+    $('count').textContent = s.users.length;
+    $('users').innerHTML = s.users.map((u) => `
+      <tr class="${u.accountEnabled ? '' : 'off'}">
+        <td>${esc(u.displayName)}</td><td>${esc(u.mail)}</td><td>${esc(u.mobilePhone)}</td>
+        <td><span class="tag ${u.accountEnabled ? '' : 'off'}">${u.accountEnabled ? 'активна' : 'отключена'}</span></td>
+        <td class="act">
+          <button data-toggle="${u.id}" data-state="${u.accountEnabled}">${u.accountEnabled ? 'Отключить' : 'Включить'}</button>
+          <button class="danger" data-del="${u.id}">Удалить</button>
+        </td>
+      </tr>`).join('');
+    const byId = Object.fromEntries(s.users.map((u) => [u.id, u.displayName]));
+    $('evcount').textContent = s.events.length;
+    $('events').innerHTML = s.events.map((e) => `
+      <tr><td>${esc(e.subject)}</td><td>${esc(byId[e.userId])}</td>
+      <td>${esc(e.start?.dateTime)}</td><td>${esc(e.end?.dateTime)}</td><td>${esc(e.location?.displayName)}</td></tr>`).join('');
+  }
+
+  const decode = (buf) => {
+    try { return new TextDecoder('utf-8', { fatal: true }).decode(buf); }
+    catch { return new TextDecoder('windows-1251').decode(buf); }
+  };
+
+  $('upload').onclick = async () => {
+    const f = $('file').files[0];
+    if (!f) { $('result').textContent = 'Выберите файл.'; return; }
+    const text = decode(await f.arrayBuffer());
+    const r = await (await fetch('/mock/users/import' + ($('replace').checked ? '?replace=1' : ''), { method: 'POST', body: text })).json();
+    $('result').textContent = `Добавлено: ${r.added}, обновлено: ${r.updated}, ошибок: ${r.errors.length}` +
+      (r.errors.length ? ' (' + r.errors.map((e) => `строка ${e.line}`).join(', ') + ')' : '');
+    load();
+  };
+  $('reset').onclick = async () => {
+    if (!confirm('Удалить всех пользователей и события?')) return;
+    await fetch('/mock/reset', { method: 'POST' });
+    $('result').textContent = 'Каталог очищен.';
+    load();
+  };
+  document.addEventListener('click', async (e) => {
+    const t = e.target.closest('button');
+    if (!t) return;
+    if (t.dataset.toggle) {
+      await fetch('/mock/users/' + t.dataset.toggle, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accountEnabled: t.dataset.state !== 'true' }) });
+      load();
+    }
+    if (t.dataset.del) {
+      await fetch('/mock/users/' + t.dataset.del, { method: 'DELETE' });
+      load();
+    }
+  });
+  load();
+</script>
+</body>
+</html>

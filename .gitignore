@@ -1,0 +1,7 @@
+node_modules/
+dist/
+target/
+backend/data/
+mock-outlook/data.json
+.idea/
+*.iml
