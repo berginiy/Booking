@@ -35,7 +35,6 @@ public class Room {
     @Column(name = "item", length = 100)
     private List<String> equipment = new ArrayList<>();
 
-    /** Доступен ли зал для новых бронирований. */
     @Column(nullable = false)
     private boolean active = true;
 }

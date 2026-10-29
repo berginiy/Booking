@@ -20,7 +20,6 @@ public class Employee {
     @Column(nullable = false, length = 150)
     private String fullName;
 
-    /** Корпоративная почта = логин. Хранится в нижнем регистре. */
     @Column(nullable = false, length = 150)
     private String email;
 
@@ -33,7 +32,6 @@ public class Employee {
     @Column(nullable = false, length = 100)
     private String passwordHash;
 
-    /** true, пока сотрудник не сменил временный пароль — до этого доступна только смена пароля. */
     @Column(nullable = false)
     private boolean mustChangePassword = true;
 
