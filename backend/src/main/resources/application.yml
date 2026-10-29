@@ -9,6 +9,7 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/booking}
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:altyn297009}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
