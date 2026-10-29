@@ -5,13 +5,17 @@ spring:
   application:
     name: conference-booking
   datasource:
-    url: jdbc:h2:file:./data/booking;AUTO_SERVER=TRUE
-    username: sa
-    password: ""
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/booking}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:altyn297009}
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
     open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   jackson:
     time-zone: Europe/Moscow
   mail:
