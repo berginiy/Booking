@@ -1,4 +1,3 @@
-# Запуск: java -jar app.jar --spring.profiles.active=postgres
 spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/booking}
