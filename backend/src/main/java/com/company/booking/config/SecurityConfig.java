@@ -1,11 +1,14 @@
+
 package com.company.booking.config;
 
 import com.company.booking.repository.EmployeeRepository;
 import com.company.booking.security.JwtAuthFilter;
 import com.company.booking.security.JwtService;
 import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,30 +29,67 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http, JwtService jwtService, EmployeeRepository employees) throws Exception {
+    SecurityFilterChain filterChain(
+            HttpSecurity http,
+            JwtService jwtService,
+            EmployeeRepository employees
+    ) throws Exception {
+
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(s ->
+                        s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(a -> a
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         .requestMatchers("/api/config", "/api/auth/login").permitAll()
+
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
                         .requestMatchers("/api/auth/**").authenticated()
                         .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
-                        .anyRequest().permitAll())
-                .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-                .addFilterBefore(new JwtAuthFilter(jwtService, employees), UsernamePasswordAuthenticationFilter.class);
+                        .anyRequest().permitAll()
+                )
+                .exceptionHandling(e ->
+                        e.authenticationEntryPoint(
+                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
+                        )
+                )
+                .addFilterBefore(
+                        new JwtAuthFilter(jwtService, employees),
+                        UsernamePasswordAuthenticationFilter.class
+                );
+
         return http.build();
     }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource(AppProperties props) {
+
         CorsConfiguration cfg = new CorsConfiguration();
+
         cfg.setAllowedOrigins(List.of(props.corsOrigin()));
-        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+
+        cfg.setAllowedMethods(List.of(
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE",
+                "OPTIONS"
+        ));
+
         cfg.setAllowedHeaders(List.of("*"));
-        UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+
+        cfg.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource src =
+                new UrlBasedCorsConfigurationSource();
+
         src.registerCorsConfiguration("/api/**", cfg);
+
         return src;
     }
 

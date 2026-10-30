@@ -47,8 +47,8 @@ app:
   work-day-start: "08:00"
   work-day-end: "20:00"
   corporate-email-domain: ${CORPORATE_EMAIL_DOMAIN:}
-  seed-demo-data: true
-  cors-origin: http://localhost:5173
+  seed-demo-data: ${SEED_DEMO_DATA:true}
+  cors-origin: ${CORS_ORIGIN:http://localhost:5173}
 
   admin:
     username: ${ADMIN_USERNAME:admin}
