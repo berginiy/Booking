@@ -48,7 +48,7 @@ app:
   work-day-end: "20:00"
   corporate-email-domain: ${CORPORATE_EMAIL_DOMAIN:}
   seed-demo-data: ${SEED_DEMO_DATA:true}
-  cors-origin: https://bookingng.netlify.app,http://localhost:5173
+  cors-origin: ${CORS_ORIGIN:https://bookingng.netlify.app}
 
   admin:
     username: ${ADMIN_USERNAME:admin}
