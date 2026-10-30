@@ -15,11 +15,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/**
- * Не является @Component намеренно — подключается только в цепочке Spring Security.
- * Для сотрудников статус (активен / должен сменить пароль) берётся из БД на каждый запрос,
- * поэтому отключение сотрудника и сброс пароля действуют немедленно.
- */
+
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
@@ -52,7 +48,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         new AuthUser(e.getId(), e.getEmail(), e.getFullName(), false),
                         List.of(new SimpleGrantedAuthority(e.isMustChangePassword() ? "ROLE_PWD_CHANGE" : "ROLE_USER"))));
             } catch (NumberFormatException ignored) {
-                // неверный subject — остаёмся анонимом
             }
         }
     }

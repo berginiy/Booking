@@ -39,7 +39,6 @@ public class AuthController {
         this.adminPasswordHash = encoder.encode(props.admin().password());
     }
 
-    /** Единый вход: логин с «@» — сотрудник (email), без «@» — администратор. */
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest r) {
         String username = r.username().trim();
@@ -73,7 +72,6 @@ public class AuthController {
         return new LoginResponse(jwt.generate(username, "ADMIN"), new MeResponse("ADMIN", username, null, null, false));
     }
 
-    /** Текущий пользователь (для восстановления сессии после перезагрузки страницы). */
     @GetMapping("/me")
     public MeResponse me() {
         AuthUser u = CurrentUser.get();
@@ -82,7 +80,6 @@ public class AuthController {
         return MeResponse.of(employees.get(u.employeeId()));
     }
 
-    /** Смена пароля сотрудником (обязательна после первого входа по временному паролю). */
     @PostMapping("/change-password")
     public LoginResponse changePassword(@Valid @RequestBody ChangePasswordRequest r) {
         AuthUser u = CurrentUser.get();

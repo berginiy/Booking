@@ -4,6 +4,8 @@ package com.company.booking.config;
 import com.company.booking.repository.EmployeeRepository;
 import com.company.booking.security.JwtAuthFilter;
 import com.company.booking.security.JwtService;
+
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.context.annotation.Bean;
@@ -70,26 +72,21 @@ public class SecurityConfig {
 
         CorsConfiguration cfg = new CorsConfiguration();
 
-        cfg.setAllowedOrigins(List.of(props.corsOrigin()));
+        List<String> origins = Arrays.stream(props.corsOrigin().split(","))
+                .map(String::trim)
+                .map(o -> o.endsWith("/") ? o.substring(0, o.length() - 1) : o)
+                .filter(o -> !o.isEmpty())
+                .toList();
 
-        cfg.setAllowedMethods(List.of(
-                "GET",
-                "POST",
-                "PUT",
-                "PATCH",
-                "DELETE",
-                "OPTIONS"
-        ));
+        cfg.setAllowedOriginPatterns(origins);
 
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
-
         cfg.setAllowCredentials(true);
+        cfg.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource src =
-                new UrlBasedCorsConfigurationSource();
-
+        UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
         src.registerCorsConfiguration("/api/**", cfg);
-
         return src;
     }
 
